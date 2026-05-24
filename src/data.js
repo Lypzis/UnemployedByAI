@@ -578,6 +578,14 @@ export const verdicts = [
   'Do not make large purchases this quarter.',
   'Your badge still works. For now.',
   'Try smiling at the printer. It may be your new manager.',
+  'Update your resume, but make it sound brave.',
+  'The robot has requested your chair.',
+  'Please return your dreams to the front desk.',
+  'Your calendar invites have already accepted defeat.',
+  'Someone in finance just smiled for the first time.',
+  'The severance package is mostly vibes.',
+  'Remain calm while the spreadsheet decides.',
+  'You are valuable. But the robot is cheaper, and valuable.',
 ];
 
 export const takenJobs = [

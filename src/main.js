@@ -102,10 +102,13 @@ Try yours: ${siteUrl}`;
 const shareText = (result) =>
   `Apparently my career survives mainly because ${result.protection[0]}. Check yours: ${siteUrl}`;
 
-const renderGalleryCard = (job) => `
+const renderGalleryCard = (job, index) => `
   <article class="job-card">
-    <img src="${job.image}" alt="${job.title} retro robot portrait" loading="lazy" />
-    <div>
+    <div class="job-art">
+      <img src="${job.image}" alt="${job.title} retro robot portrait" loading="lazy" />
+      <button class="punch-trigger" type="button" data-robot-index="${index}">Punch it</button>
+    </div>
+    <div class="job-copy">
       <h3>${job.title}</h3>
       <p>${job.caption}</p>
     </div>
@@ -173,6 +176,44 @@ app.innerHTML = `
   <footer>
     Built entirely by Lypzis, a human. For now.
   </footer>
+
+  <div class="punch-modal" role="dialog" aria-modal="true" aria-labelledby="punch-title" hidden>
+    <div class="punch-backdrop" data-punch-close></div>
+    <section class="punch-panel">
+      <button class="punch-close" type="button" data-punch-close>Escape Reality</button>
+      <p class="eyebrow">Workforce Resistance Simulator</p>
+      <h2 id="punch-title">Punch the Robot</h2>
+      <p class="punch-instruction">Click the robot until morale improves.</p>
+
+      <button class="punch-target" type="button" aria-label="Punch selected robot">
+        <img class="punch-robot" src="" alt="" />
+        <span class="crack crack-one" aria-hidden="true"></span>
+        <span class="crack crack-two" aria-hidden="true"></span>
+        <span class="spark spark-one" aria-hidden="true"></span>
+        <span class="spark spark-two" aria-hidden="true"></span>
+        <span class="spark spark-three" aria-hidden="true"></span>
+      </button>
+
+      <div class="punch-stats" aria-live="polite">
+        <span class="hit-counter">Worker Rage x0</span>
+        <span class="session-score">Automation Delayed: 0s</span>
+      </div>
+      <p class="damage-label">Damage: pristine corporate equipment</p>
+      <p class="robot-line">Awaiting authorized frustration.</p>
+      <button class="replay-button" type="button" hidden>Reassemble Robot</button>
+      <div class="punch-share" hidden>
+        <p class="punch-share-text">AUTOMATION DELAYED: 0 SECONDS</p>
+        <div class="punch-share-actions" aria-label="Share minigame result">
+          <a class="punch-x-share" href="#" target="_blank" rel="noreferrer">Share on X</a>
+          <a class="punch-whatsapp-share" href="#" target="_blank" rel="noreferrer">WhatsApp</a>
+          <a class="punch-linkedin-share" href="#" target="_blank" rel="noreferrer">LinkedIn</a>
+          <button type="button" data-punch-share="result">Copy Result</button>
+          <button type="button" data-punch-share="link">Copy Link</button>
+        </div>
+        <p class="punch-copy-feedback" role="status"></p>
+      </div>
+    </section>
+  </div>
 `;
 
 const form = document.querySelector('.analyzer');
@@ -180,9 +221,27 @@ const input = document.querySelector('#profession');
 const autocompleteList = document.querySelector('#profession-matches');
 const output = document.querySelector('.output');
 const suggestionButtons = document.querySelectorAll('.suggestion');
+const jobsGrid = document.querySelector('.jobs-grid');
+const punchModal = document.querySelector('.punch-modal');
+const punchPanel = document.querySelector('.punch-panel');
+const punchTarget = document.querySelector('.punch-target');
+const punchRobot = document.querySelector('.punch-robot');
+const hitCounter = document.querySelector('.hit-counter');
+const sessionScore = document.querySelector('.session-score');
+const damageLabel = document.querySelector('.damage-label');
+const robotLine = document.querySelector('.robot-line');
+const replayButton = document.querySelector('.replay-button');
+const punchShare = document.querySelector('.punch-share');
+const punchShareText = document.querySelector('.punch-share-text');
+const punchCopyFeedback = document.querySelector('.punch-copy-feedback');
 let currentTimer = null;
 let currentMatches = [];
 let activeMatchIndex = -1;
+let selectedRobot = null;
+let robotHits = 0;
+let workerRage = 0;
+let automationDelay = 0;
+let currentResistanceMessage = '';
 
 const clearTimer = () => {
   if (currentTimer) {
@@ -259,6 +318,191 @@ const renderLoading = (messages, index = 0) => {
       <span>Analysis ${Math.round(((index + 1) / messages.length) * 100)}%</span>
     </div>
   `;
+};
+
+const getDamageStage = (hits) => {
+  if (hits >= 10) return 4;
+  if (hits >= 6) return 3;
+  if (hits >= 3) return 2;
+  if (hits >= 1) return 1;
+  return 0;
+};
+
+const damageLabels = [
+  'Damage: pristine corporate equipment',
+  'Damage: mild shareholder concern',
+  'Damage: sparks and paperwork',
+  'Damage: warranty voided',
+  'Damage: robot absolutely handled',
+];
+
+const resistanceMessages = [
+  {
+    min: 0,
+    lines: [
+      'Temporary emotional relief achieved.',
+      'Automation has been mildly inconvenienced.',
+      'One robot filed a discomfort ticket.',
+      'Human dignity restored. Estimated duration: 12 seconds.',
+    ],
+  },
+  {
+    min: 5,
+    lines: [
+      'Human resistance increasing...',
+      'The quarterly automation roadmap is sweating.',
+      'A nearby algorithm just flinched.',
+      'Morale has improved beyond approved limits.',
+    ],
+  },
+  {
+    min: 10,
+    lines: [
+      'Corporate concern detected.',
+      'A manager has opened a risk spreadsheet.',
+      'The replacement department is requesting backup.',
+      'HR has described this as regrettably energetic.',
+    ],
+  },
+  {
+    min: 15,
+    lines: [
+      'You are now flagged as anti-automation.',
+      'Your clicks have been forwarded to compliance.',
+      'The machines have added you to a watchlist.',
+      'Your badge access now sounds nervous.',
+    ],
+  },
+  {
+    min: 25,
+    lines: [
+      'The future fears you.',
+      'Automation morale has dropped 4%.',
+      'A robot union meeting has been scheduled.',
+      'The timeline briefly considered changing course.',
+    ],
+  },
+];
+
+const getResistanceMessage = (score) => {
+  const unlockedLines = resistanceMessages
+    .filter((group) => score >= group.min)
+    .flatMap((group) => group.lines);
+
+  if (score >= 50) {
+    const minutes = Math.max(1, Math.round(score / 60));
+    unlockedLines.push(
+      `You delayed AI progress by approximately ${minutes} minute${minutes === 1 ? '' : 's'}.`
+    );
+  }
+
+  return randomItem(unlockedLines);
+};
+
+const getPunchShareCopy = () => {
+  const resistanceMessage = currentResistanceMessage || getResistanceMessage(automationDelay);
+
+  return `AUTOMATION DELAYED: ${automationDelay} SECONDS
+
+${resistanceMessage}
+
+Worker Rage multiplier: x${workerRage}
+I fought back against ${selectedRobot?.title || 'AI'}.
+Your turn: ${siteUrl}`;
+};
+
+const renderPunchShare = (isDestroyed) => {
+  punchShare.hidden = !isDestroyed;
+
+  if (!isDestroyed) {
+    punchCopyFeedback.textContent = '';
+    return;
+  }
+
+  const resistanceMessage = currentResistanceMessage || getResistanceMessage(automationDelay);
+  const shareCopy = getPunchShareCopy();
+  const encodedShare = encodeURIComponent(shareCopy);
+  const encodedUrl = encodeURIComponent(siteUrl);
+
+  punchShareText.textContent = `AUTOMATION DELAYED: ${automationDelay} SECONDS - ${resistanceMessage}`;
+  document.querySelector('.punch-x-share').href = `https://twitter.com/intent/tweet?text=${encodedShare}`;
+  document.querySelector('.punch-whatsapp-share').href = `https://wa.me/?text=${encodedShare}`;
+  document.querySelector('.punch-linkedin-share').href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+};
+
+const renderPunchState = () => {
+  const stage = getDamageStage(robotHits);
+  const isDestroyed = stage === 4;
+
+  punchPanel.classList.remove('is-hit');
+  punchRobot.className = `punch-robot robot-stage-${stage}${isDestroyed ? ' robot-destroyed' : ''}`;
+  hitCounter.textContent = `Worker Rage x${workerRage}`;
+  sessionScore.textContent = `Automation Delayed: ${automationDelay}s`;
+  damageLabel.textContent = damageLabels[stage];
+  replayButton.hidden = !isDestroyed;
+  punchTarget.disabled = isDestroyed;
+  renderPunchShare(isDestroyed);
+
+  if (isDestroyed) {
+    robotLine.textContent = selectedRobot.defeatLine;
+  }
+};
+
+const openPunchModal = (robot) => {
+  selectedRobot = robot;
+  robotHits = 0;
+  workerRage = 0;
+  automationDelay = 0;
+  currentResistanceMessage = '';
+
+  punchModal.hidden = false;
+  document.body.classList.add('modal-open');
+  document.querySelector('#punch-title').textContent = robot.title;
+  punchRobot.src = robot.image;
+  punchRobot.alt = `${robot.title} awaiting workplace consequences`;
+  robotLine.textContent = 'Awaiting authorized frustration.';
+  punchCopyFeedback.textContent = '';
+  renderPunchState();
+  window.setTimeout(() => punchTarget.focus(), 0);
+};
+
+const closePunchModal = () => {
+  punchModal.hidden = true;
+  document.body.classList.remove('modal-open');
+  selectedRobot = null;
+  robotHits = 0;
+  workerRage = 0;
+  automationDelay = 0;
+  currentResistanceMessage = '';
+};
+
+const punchRobotOnce = () => {
+  if (!selectedRobot || robotHits >= 10) return;
+
+  robotHits += 1;
+  workerRage += 1;
+  automationDelay += workerRage;
+  if (robotHits >= 10) {
+    currentResistanceMessage = getResistanceMessage(automationDelay);
+  }
+  robotLine.textContent = randomItem(selectedRobot.hitLines);
+  renderPunchState();
+
+  punchPanel.classList.add('is-hit');
+  punchTarget.classList.remove('impact');
+  void punchTarget.offsetWidth;
+  punchTarget.classList.add('impact');
+
+  window.setTimeout(() => punchPanel.classList.remove('is-hit'), 260);
+};
+
+const reassembleRobot = () => {
+  robotHits = 0;
+  currentResistanceMessage = '';
+  robotLine.textContent = 'Reassembled against worker wishes.';
+  punchCopyFeedback.textContent = '';
+  renderPunchState();
+  punchTarget.focus();
 };
 
 const renderShareButtons = (result) => {
@@ -384,6 +628,48 @@ autocompleteList.addEventListener('click', (event) => {
   const option = event.target.closest('.autocomplete-option');
   if (!option) return;
   fillProfession(option.dataset.profession);
+});
+
+jobsGrid.addEventListener('click', (event) => {
+  const trigger = event.target.closest('.punch-trigger');
+  if (!trigger) return;
+
+  openPunchModal(takenJobs[Number(trigger.dataset.robotIndex)]);
+});
+
+punchTarget.addEventListener('click', punchRobotOnce);
+
+replayButton.addEventListener('click', reassembleRobot);
+
+punchModal.addEventListener('click', (event) => {
+  const shareButton = event.target.closest('[data-punch-share]');
+
+  if (shareButton) {
+    const text = shareButton.dataset.punchShare === 'link' ? siteUrl : getPunchShareCopy();
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        punchCopyFeedback.textContent =
+          shareButton.dataset.punchShare === 'link'
+            ? 'Link copied. The machines are concerned.'
+            : 'Achievement copied. Human morale increased briefly.';
+      })
+      .catch(() => {
+        punchCopyFeedback.textContent = 'Copy failed. Automation remains technically undefeated.';
+      });
+    return;
+  }
+
+  if (event.target.closest('[data-punch-close]')) {
+    closePunchModal();
+  }
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !punchModal.hidden) {
+    closePunchModal();
+  }
 });
 
 output.addEventListener('click', async (event) => {

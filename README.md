@@ -14,6 +14,7 @@ The site is intentionally unserious: users enter a profession, wait through a fa
 - Randomized replacement results
 - Share/copy buttons
 - Jobs Already Taken gallery
+- Robot Punch minigame in the gallery
 - About, Contact, and Privacy pages
 - Netlify-ready config
 - `robots.txt` and `sitemap.xml`

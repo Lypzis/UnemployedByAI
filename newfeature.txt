@@ -1,0 +1,687 @@
+# UnemployedByAI.lol — Robot Punch Minigame Specification
+
+## 1. Concept
+
+The **Robot Punch Minigame** is a small interactive feature inside the “Jobs Already Taken” gallery.
+
+When the user hovers over a robot job card, a button appears:
+
+> PUNCH IT
+
+Clicking it opens a small modal minigame where the user can repeatedly punch the selected robot until it breaks apart.
+
+The feature is meant to be funny, cathartic, lightweight, and absurd. It should feel like a tiny emotional coping mechanism for AI job anxiety.
+
+## 2. Purpose
+
+This feature should:
+
+* Increase time on page
+* Make the gallery more interactive
+* Create shareable/funny moments
+* Reinforce the satire of the site
+* Give users a silly way to “fight back” against AI replacement
+
+It should not become a full game or complex system.
+
+## 3. Trigger Flow
+
+### Gallery Card Hover
+
+Each “Jobs Already Taken” card should show an overlay on hover/focus.
+
+Overlay text/button:
+
+> PUNCH IT
+
+On mobile, where hover does not exist, the button should either:
+
+* Always be visible under the card, or
+* Appear after tapping the card once
+
+Recommended MVP: always show a small “Punch it” button on mobile.
+
+### On Click
+
+Clicking “Punch It” opens the minigame modal.
+
+The modal receives the selected robot/job data:
+
+* Robot image
+* Robot name
+* Robot-specific hit lines
+* Robot-specific defeat line
+
+## 4. Modal Layout
+
+The modal should appear centered with a darkened backdrop.
+
+Elements:
+
+* Title
+* Robot image
+* Hit counter
+* Short instruction
+* Damage state
+* Close button
+* Replay button after robot is destroyed
+
+Suggested title:
+
+> Workforce Resistance Simulator
+
+Instruction:
+
+> Click the robot until morale improves.
+
+Hit counter:
+
+> Worker Rage x0
+
+Close button:
+
+> Escape Reality
+
+Replay button:
+
+> Reassemble Robot
+
+## 5. Gameplay Loop
+
+Simple click/tap interaction.
+
+### Initial State
+
+Robot appears intact.
+
+Counter starts at 0.
+
+### On Each Click
+
+* Increase hit counter
+* Trigger punch animation
+* Trigger screen/card shake
+* Play or simulate impact feedback
+* Show a short robot-specific reaction line
+* Increase visual damage
+
+### Damage Thresholds
+
+Example thresholds:
+
+* 0 hits: normal
+* 3 hits: small cracks / sparks
+* 6 hits: damaged / tilted / smoke
+* 10 hits: destroyed / dust / screws / broken pieces
+
+MVP can use CSS classes instead of multiple images.
+
+Example classes:
+
+```css
+.robot-stage-0 {}
+.robot-stage-1 {}
+.robot-stage-2 {}
+.robot-stage-3 {}
+.robot-destroyed {}
+```
+
+## 6. Visual Damage Options
+
+Keep it lightweight.
+
+Possible MVP visual effects:
+
+* CSS shake animation
+* Temporary red flash
+* Rotation/scale distortion
+* Crack overlay using pseudo-element
+* Sparks using CSS particles or emoji-like small elements
+* Opacity fade on final destruction
+* Broken screws/pixels falling using simple absolutely positioned spans
+
+Avoid heavy canvas/game-engine implementation for MVP.
+
+## 7. Robot-Specific Lines
+
+Each robot should have a few hit reaction lines and one defeat line.
+
+### AI Recruiter
+
+Hit lines:
+
+* Your application is still under review.
+* We’ll keep your resume in our database.
+* Unfortunately, we moved forward with other candidates.
+* Feedback will arrive in 3–5 business eternities.
+
+Defeat line:
+
+> Your application has finally been seen.
+
+### AI HR
+
+Hit lines:
+
+* Please fill this form first.
+* Culture fit not detected.
+* This feedback is confidential.
+* We value your interest.
+
+Defeat line:
+
+> Generic feedback generator disabled.
+
+### AI Manager
+
+Hit lines:
+
+* Let’s circle back.
+* Can we sync on this?
+* Adding a quick meeting.
+* This could have been an email.
+
+Defeat line:
+
+> Meeting cancelled due to structural damage.
+
+### AI Influencer
+
+Hit lines:
+
+* Link in bio.
+* This interaction is sponsored.
+* Don’t forget to subscribe.
+* I am definitely a real person.
+
+Defeat line:
+
+> Parasocial engine offline.
+
+### AI Junior Developer
+
+Hit lines:
+
+* npm install failed.
+* Centering div...
+* Asking ChatGPT...
+* Pushing directly to main.
+
+Defeat line:
+
+> Build failed successfully.
+
+### AI Therapist
+
+Hit lines:
+
+* How does that make you feel?
+* I’m sorry you feel that way.
+* Processing empathy simulation.
+* Your feelings are valid and billable.
+
+Defeat line:
+
+> Empathy module unavailable.
+
+### AI Artist
+
+Hit lines:
+
+* Generating six fingers.
+* Training on your portfolio.
+* Hands are optional.
+* Style reference detected.
+
+Defeat line:
+
+> Copyright ambiguity destroyed.
+
+### AI Delivery Rider
+
+Hit lines:
+
+* Route includes a hill.
+* Battery anxiety detected.
+* Refusing pothole.
+* Calculating miserable payout.
+
+Defeat line:
+
+> Robot refused Brazilian terrain.
+
+## 8. Persistent Session Score System
+
+The minigame should include a persistent score visible inside the modal.
+
+This score does NOT reset when the robot is reassembled.
+
+The score only resets when the modal is closed.
+
+This creates a temporary “fight against automation” session feeling.
+
+The score should increase every time a robot is fully destroyed.
+
+### Suggested Score Labels
+
+Possible labels:
+
+```text
+AUTOMATION DELAYED: 14 SECONDS
+```
+
+```text
+WORKER RESISTANCE SCORE: 14
+```
+
+```text
+TOTAL ROBOTS TERMINATED: 14
+```
+
+Recommended MVP label:
+
+```text
+AUTOMATION DELAYED: 14 SECONDS
+```
+
+This reinforces the joke that destroying robots only delays the inevitable slightly.
+
+### Score Behavior
+
+Flow:
+
+```text
+Punch robot
+↓
+Destroy robot
+↓
++1 session score
+↓
+Replay robot
+↓
+Score persists
+↓
+Close modal
+↓
+Score resets
+```
+
+### Replay Loop Purpose
+
+This mechanic exists to:
+
+* Increase replayability
+* Increase time on page
+* Create arcade-like session behavior
+* Make users continue punching robots “one more time”
+* Reinforce the absurd anti-automation theme
+
+### Progressive Session Messages
+
+As the score increases, show fake propaganda/system messages.
+
+Examples:
+
+#### 5 robots
+
+> Human resistance increasing...
+
+#### 10 robots
+
+> Corporate concern detected.
+
+#### 15 robots
+
+> You are now flagged as anti-automation.
+
+#### 25 robots
+
+> The future fears you.
+
+#### 50 robots
+
+> You delayed AI progress by approximately 3 minutes.
+
+These should appear briefly as overlays or status messages.
+
+### Replay Button Behavior
+
+The replay button:
+
+> Reassemble Robot
+
+Should:
+
+* Reset damage state
+* Reset hit counter
+* Reset robot visuals
+* Keep session score intact
+* Keep modal open
+
+## 9. Minigame Share System
+
+The minigame should include share functionality after destroying robots.
+
+The purpose is to transform the feature from a private interaction into a social “resistance against automation” meme.
+
+The shares should feel like fake achievements or anti-automation propaganda.
+
+## 9.1 Share Trigger
+
+After a robot is destroyed, show:
+
+* Share buttons
+* Session score
+* Funny share text
+
+This should appear near the replay button.
+
+## 9.2 Share Copy
+
+The share text should dynamically include the user’s current session score.
+
+Example:
+
+```text
+I fought back.
+Help me delay our replacement too:
+```
+
+Alternative examples:
+
+```text
+I delayed automation by 14 seconds.
+Your turn:
+```
+
+```text
+Humanity is still fighting.
+Barely.
+```
+
+```text
+I destroyed 12 robots before HR arrived.
+```
+
+```text
+AUTOMATION DELAYED:
+34 SECONDS
+```
+
+All share messages should include the site URL.
+
+## 9.3 Share Buttons
+
+Suggested buttons:
+
+* Share on X/Twitter
+* Share on WhatsApp
+* Share on LinkedIn
+* Copy Result
+* Copy Link
+
+Optional future feature:
+
+* Copy image/screenshot card
+
+## 9.4 Share Card Concept
+
+The shared result should feel like a fake achievement.
+
+Example visual:
+
+```text
+AUTOMATION DELAYED:
+34 SECONDS
+```
+
+Under it:
+
+```text
+Human resistance increasing...
+```
+
+This creates:
+
+* Meme screenshots
+* Social competition
+* Replay motivation
+* Funny flexing behavior
+
+## 9.5 Psychological Goal
+
+The sharing system exists to:
+
+* Encourage replayability
+* Create social spread
+* Turn the score into a flex
+* Make users feel part of fake anti-automation resistance
+* Increase screenshot potential
+
+The tone should remain:
+
+* absurd
+* fake heroic
+* retro dystopian
+* self-aware
+
+## 10. Final Destruction State
+
+When the robot reaches the final hit threshold, show a destruction animation and a final message.
+
+Generic final messages:
+
+* Temporary emotional relief achieved.
+* Robot destroyed. Automation delayed by 4 seconds.
+* Congratulations. The future is still coming.
+* You have solved unemployment temporarily.
+* Human dignity restored. Estimated duration: 12 seconds.
+
+Show replay button:
+
+> Reassemble Robot
+
+Optional secondary button:
+
+> Try Another Profession
+
+## 10. Audio
+
+Audio should be optional and muted by default or absent in MVP.
+
+Possible future sounds:
+
+* Punch impact
+* Metallic clang
+* Robot beep
+* Final explosion
+
+Because sudden sound can be annoying, MVP should avoid audio unless a toggle is added.
+
+## 11. Accessibility
+
+The minigame should remain usable without a mouse.
+
+Requirements:
+
+* “Punch It” button must be keyboard focusable
+* Modal should trap focus while open
+* Escape key should close modal
+* Punch button or robot area should be keyboard activatable
+* Avoid relying only on hover
+* Use readable contrast
+* Add reduced motion support
+
+For users with `prefers-reduced-motion`, reduce shake and flashing effects.
+
+## 12. Data Structure
+
+Robot cards should be driven by data.
+
+Example:
+
+```js
+const stolenJobs = [
+  {
+    id: 'recruiter',
+    title: 'AI Recruiter',
+    caption: 'Rejected your CV before opening it.',
+    image: '/robots/recruiter.png',
+    hitLines: [
+      'Your application is still under review.',
+      'We’ll keep your resume in our database.',
+      'Unfortunately, we moved forward with other candidates.',
+      'Feedback will arrive in 3–5 business eternities.'
+    ],
+    defeatLine: 'Your application has finally been seen.'
+  }
+]
+```
+
+## 13. Implementation Plan
+
+### Step 1 — Add hover overlay
+
+Add hover/focus overlay to each gallery card with a “Punch It” button.
+
+### Step 2 — Add modal shell
+
+Create a reusable modal component in vanilla JS.
+
+### Step 3 — Pass selected robot data
+
+When the user clicks a card button, open the modal with that robot’s data.
+
+### Step 4 — Implement hit counter
+
+Each click increments the hit count.
+
+### Step 5 — Add damage classes
+
+Map hit count to visual damage stage.
+
+Example:
+
+```js
+function getDamageStage(hits) {
+  if (hits >= 10) return 'destroyed'
+  if (hits >= 7) return 'stage-3'
+  if (hits >= 4) return 'stage-2'
+  if (hits >= 1) return 'stage-1'
+  return 'stage-0'
+}
+```
+
+### Step 6 — Add reaction lines
+
+Randomly show a hit line on each punch.
+
+### Step 7 — Add final destroyed state
+
+At threshold, disable punching and show defeat line + replay button.
+
+### Step 8 — Add reduced motion support
+
+Respect `prefers-reduced-motion`.
+
+## 14. CSS Effects
+
+Suggested effects:
+
+```css
+.punch-shake {
+  animation: punchShake 120ms ease-in-out;
+}
+
+@keyframes punchShake {
+  0% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-4px, 2px) rotate(-2deg); }
+  50% { transform: translate(4px, -2px) rotate(2deg); }
+  75% { transform: translate(-2px, -1px) rotate(-1deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+```
+
+Destroyed state:
+
+```css
+.robot-destroyed {
+  opacity: 0.35;
+  filter: grayscale(1) contrast(1.2);
+  transform: rotate(-8deg) scale(0.95);
+}
+```
+
+## 15. Tone Rules
+
+The minigame should feel funny, not violent-realistic.
+
+Do:
+
+* Robot slapstick
+* Broken screws
+* Sparks
+* Dust
+* Retro cartoon damage
+* Emotional relief jokes
+
+Avoid:
+
+* Gore-like visuals
+* Realistic violence
+* Human targets
+* Aggressive dark tone
+
+This is a robot-smashing gag, not a violent game.
+
+## 16. MVP Scope
+
+### Must Have
+
+* Punch It button on gallery cards
+* Modal opens with selected robot
+* Click/tap punching
+* Hit counter
+* Reaction lines
+* Damage stages
+* Destroyed state
+* Replay button
+* Close button
+
+### Nice to Have
+
+* Sound toggle
+* CSS particles
+* Robot-specific durability
+* Share result after destroying robot
+* Tiny achievement text
+* Combo counter
+
+### Not Needed
+
+* Canvas engine
+* Physics engine
+* Scores stored in database
+* Accounts
+* Leaderboards
+* Multiplayer
+
+## 17. Success Criteria
+
+The feature succeeds if users:
+
+* Laugh when they see “Punch It”
+* Click at least one robot
+* Replay once
+* Share a screenshot or screen recording
+* Spend more time scrolling the gallery
+
+## 18. Core Principle
+
+Keep it small, stupid, and satisfying.
+
+The joke should be instant:
+
+> AI stole your job. Punch the robot.
+
+No explanation needed.

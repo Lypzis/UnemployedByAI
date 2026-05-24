@@ -42,6 +42,10 @@ body {
   background-size: auto, 34px 34px, 34px 34px, auto;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 button,
 input {
   font: inherit;
@@ -477,16 +481,21 @@ ul {
   box-shadow: 5px 5px 0 var(--line);
 }
 
+.job-art {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 3px solid var(--line);
+  background: #d6e7dd;
+}
+
 .job-card img {
   display: block;
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-bottom: 3px solid var(--line);
-  background: #d6e7dd;
 }
 
-.job-card div {
+.job-copy {
   padding: 14px;
 }
 
@@ -499,6 +508,32 @@ ul {
 .job-card p {
   margin: 8px 0 0;
   color: var(--muted);
+}
+
+.punch-trigger {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  min-height: 42px;
+  border: 3px solid var(--line);
+  background: var(--red);
+  color: var(--panel);
+  box-shadow: 4px 4px 0 var(--line);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 6px 14px;
+  text-transform: uppercase;
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.job-card:hover .punch-trigger,
+.job-card:focus-within .punch-trigger {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .incoming {
@@ -565,6 +600,297 @@ footer {
   font-weight: 900;
 }
 
+.punch-modal[hidden] {
+  display: none;
+}
+
+.punch-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.punch-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(36, 33, 29, 0.74);
+}
+
+.punch-panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(92vh, 760px);
+  overflow-y: auto;
+  padding: clamp(18px, 4vw, 30px);
+  border: 3px solid var(--line);
+  background:
+    linear-gradient(rgba(198, 63, 53, 0.08) 50%, transparent 50%),
+    var(--panel);
+  background-size: 100% 8px, auto;
+  box-shadow: var(--shadow);
+}
+
+.punch-panel.is-hit {
+  animation: panel-shake 180ms linear;
+}
+
+.punch-close,
+.replay-button,
+.punch-share-actions button,
+.punch-share-actions a {
+  min-height: 42px;
+  border: 3px solid var(--line);
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--line);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 6px 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.punch-close {
+  float: right;
+  margin-left: 12px;
+}
+
+.punch-panel h2 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 4rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.punch-instruction {
+  margin: 12px 0 16px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.punch-target {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(300px, 84vw);
+  margin: 0 auto;
+  border: 3px solid var(--line);
+  background: #d6e7dd;
+  box-shadow: 5px 5px 0 var(--line);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+.punch-target:disabled {
+  cursor: not-allowed;
+}
+
+.punch-target.impact {
+  animation: robot-impact 190ms ease;
+}
+
+.punch-robot {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  transition:
+    filter 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.robot-stage-1 {
+  transform: rotate(-2deg) scale(0.99);
+  filter: saturate(1.1);
+}
+
+.robot-stage-2 {
+  transform: rotate(3deg) scale(0.97);
+  filter: saturate(1.15) contrast(1.05);
+}
+
+.robot-stage-3 {
+  transform: rotate(-7deg) scale(0.93);
+  filter: saturate(1.3) contrast(1.15);
+}
+
+.robot-destroyed {
+  transform: rotate(14deg) translateY(22px) scale(0.74);
+  opacity: 0.36;
+  filter: grayscale(1) contrast(1.3);
+}
+
+.crack {
+  position: absolute;
+  width: 74px;
+  height: 3px;
+  background: var(--line);
+  opacity: 0;
+  transform-origin: left center;
+}
+
+.crack::before,
+.crack::after {
+  content: '';
+  position: absolute;
+  width: 38px;
+  height: 3px;
+  background: var(--line);
+  left: 28px;
+}
+
+.crack::before {
+  top: -13px;
+  transform: rotate(-38deg);
+}
+
+.crack::after {
+  top: 13px;
+  transform: rotate(34deg);
+}
+
+.crack-one {
+  top: 34%;
+  left: 23%;
+  transform: rotate(24deg);
+}
+
+.crack-two {
+  right: 18%;
+  bottom: 30%;
+  transform: rotate(-18deg);
+}
+
+.robot-stage-2 ~ .crack-one,
+.robot-stage-3 ~ .crack-one,
+.robot-destroyed ~ .crack-one,
+.robot-stage-3 ~ .crack-two,
+.robot-destroyed ~ .crack-two {
+  opacity: 1;
+}
+
+.spark {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--red);
+  background: var(--yellow);
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+.spark-one {
+  top: 20%;
+  right: 21%;
+}
+
+.spark-two {
+  left: 18%;
+  bottom: 26%;
+}
+
+.spark-three {
+  top: 50%;
+  right: 35%;
+}
+
+.robot-stage-3 ~ .spark,
+.robot-destroyed ~ .spark {
+  opacity: 1;
+  animation: spark-blink 650ms steps(2, end) infinite;
+}
+
+.punch-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.punch-stats span {
+  border: 3px solid var(--line);
+  background: var(--yellow);
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 6px 10px;
+  font-weight: 900;
+}
+
+.damage-label,
+.robot-line {
+  margin: 14px 0 0;
+  text-align: center;
+  font-weight: 900;
+}
+
+.damage-label {
+  color: var(--muted);
+}
+
+.robot-line {
+  min-height: 1.6em;
+  color: var(--red);
+}
+
+.replay-button {
+  display: block;
+  margin: 18px auto 0;
+  background: #dce8f0;
+}
+
+.replay-button[hidden] {
+  display: none;
+}
+
+.punch-share[hidden] {
+  display: none;
+}
+
+.punch-share {
+  margin-top: 16px;
+  padding: 14px;
+  border: 3px solid var(--line);
+  background: #dce8f0;
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.punch-share-text {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.punch-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+}
+
+.punch-share-actions button,
+.punch-share-actions a {
+  display: inline-grid;
+  place-items: center;
+  min-height: 38px;
+  background: var(--panel);
+  font-size: 0.82rem;
+}
+
+.punch-copy-feedback {
+  min-height: 1.4em;
+  margin: 12px 0 0;
+  color: var(--red);
+  font-weight: 900;
+  text-align: center;
+}
+
 @keyframes scan {
   from {
     transform: translateX(-100%);
@@ -572,6 +898,46 @@ footer {
 
   to {
     transform: translateX(100%);
+  }
+}
+
+@keyframes robot-impact {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-7px, 3px) rotate(-2deg);
+  }
+
+  50% {
+    transform: translate(7px, -4px) rotate(2deg);
+  }
+
+  75% {
+    transform: translate(-4px, -2px) rotate(-1deg);
+  }
+}
+
+@keyframes panel-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  33% {
+    transform: translate(5px, -3px);
+  }
+
+  66% {
+    transform: translate(-5px, 3px);
+  }
+}
+
+@keyframes spark-blink {
+  50% {
+    opacity: 0.25;
   }
 }
 
@@ -635,6 +1001,19 @@ footer {
 
   .jobs-grid {
     grid-template-columns: 1fr;
+  }
+
+  .punch-trigger {
+    position: static;
+    width: calc(100% - 24px);
+    margin: 0 12px 12px;
+    transform: none;
+    opacity: 1;
+  }
+
+  .job-art {
+    overflow: visible;
+    padding-bottom: 12px;
   }
 
   .down-link {

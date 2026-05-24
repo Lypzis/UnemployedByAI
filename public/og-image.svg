@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Were You Unemployed By AI social preview</title>
+  <desc id="desc">Retro robot social card for UnemployedByAI.lol</desc>
+  <rect width="1200" height="630" fill="#f4ecda"/>
+  <path d="M0 0h1200v630H0z" fill="#f4ecda"/>
+  <g opacity=".22">
+    <path d="M0 45h1200M0 90h1200M0 135h1200M0 180h1200M0 225h1200M0 270h1200M0 315h1200M0 360h1200M0 405h1200M0 450h1200M0 495h1200M0 540h1200M0 585h1200" stroke="#2c2823" stroke-width="2"/>
+    <path d="M45 0v630M90 0v630M135 0v630M180 0v630M225 0v630M270 0v630M315 0v630M360 0v630M405 0v630M450 0v630M495 0v630M540 0v630M585 0v630M630 0v630M675 0v630M720 0v630M765 0v630M810 0v630M855 0v630M900 0v630M945 0v630M990 0v630M1035 0v630M1080 0v630M1125 0v630M1170 0v630" stroke="#2c2823" stroke-width="2"/>
+  </g>
+
+  <rect x="62" y="62" width="1076" height="506" fill="#fff8e8" stroke="#24211d" stroke-width="8"/>
+  <rect x="74" y="74" width="1076" height="506" fill="none" stroke="#24211d" stroke-width="8" opacity=".35"/>
+
+  <g transform="translate(780 102)">
+    <rect x="0" y="0" width="290" height="360" fill="#ead9b9"/>
+    <path d="M145 72V22" stroke="#24211d" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="145" cy="17" r="16" fill="#c63f35" stroke="#24211d" stroke-width="8"/>
+    <rect x="48" y="72" width="194" height="140" rx="22" fill="#82a87d" stroke="#24211d" stroke-width="11"/>
+    <rect x="76" y="104" width="138" height="39" rx="7" fill="#dce8f0" stroke="#24211d" stroke-width="7"/>
+    <circle cx="109" cy="124" r="10" fill="#24211d"/>
+    <circle cx="181" cy="124" r="10" fill="#24211d"/>
+    <path d="M102 174h86" stroke="#24211d" stroke-width="9" stroke-linecap="round"/>
+    <path d="M122 174v15M164 174v15" stroke="#24211d" stroke-width="7" stroke-linecap="round"/>
+    <rect x="68" y="228" width="154" height="94" rx="12" fill="#3f7891" stroke="#24211d" stroke-width="10"/>
+    <path d="M95 258h100M95 284h100" stroke="#f4ecda" stroke-width="8" stroke-linecap="round"/>
+    <path d="M68 248 16 200M222 248l52-48" stroke="#24211d" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="12" cy="196" r="18" fill="#c63f35" stroke="#24211d" stroke-width="8"/>
+    <circle cx="278" cy="196" r="18" fill="#c63f35" stroke="#24211d" stroke-width="8"/>
+    <path d="M92 340h48M150 340h48" stroke="#24211d" stroke-width="14" stroke-linecap="round"/>
+  </g>
+
+  <text x="112" y="150" fill="#c63f35" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900">DEPARTMENT OF AUTOMATED BAD NEWS</text>
+  <text x="112" y="264" fill="#24211d" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="94" font-weight="900">WERE YOU</text>
+  <text x="112" y="365" fill="#24211d" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="94" font-weight="900">UNEMPLOYED</text>
+  <text x="112" y="466" fill="#24211d" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="94" font-weight="900">BY AI?</text>
+  <text x="116" y="524" fill="#6e6155" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700">Check if a robot is learning how to do your job.</text>
+</svg>

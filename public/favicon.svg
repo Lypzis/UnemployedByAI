@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Smiling robot head">
+  <rect width="64" height="64" fill="#f4ecda"/>
+  <rect x="12" y="16" width="40" height="36" rx="7" fill="#82a87d" stroke="#24211d" stroke-width="4"/>
+  <path d="M32 16V8" stroke="#24211d" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="7" r="4" fill="#c63f35" stroke="#24211d" stroke-width="3"/>
+  <circle cx="24" cy="31" r="4" fill="#24211d"/>
+  <circle cx="40" cy="31" r="4" fill="#24211d"/>
+  <path d="M22 42h20" stroke="#24211d" stroke-width="4" stroke-linecap="round"/>
+  <path d="M27 42v4M37 42v4" stroke="#24211d" stroke-width="3" stroke-linecap="round"/>
+</svg>

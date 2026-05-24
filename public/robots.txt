@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://unemployedbyai.lol/sitemap.xml

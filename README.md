@@ -1,13 +1,18 @@
 # UnemployedByAI.lol
 
-A satirical single-page website that pretends to estimate whether AI is replacing your job.
+UnemployedByAI.lol is a satirical static website that pretends to estimate whether AI is replacing your job.
 
-The site is intentionally unserious: users enter a profession, wait through a fake analysis sequence, and receive a shareable result full of corporate-dystopian nonsense.
+The site is intentionally unserious: users enter a profession, wait through a fake analysis sequence, and receive a shareable result full of corporate-dystopian nonsense. The gallery includes a tiny Robot Punch minigame for users who need to express workplace feelings at a cartoon robot.
+
+## Stack
+
+- Vite
+- Vanilla JavaScript
+- Plain HTML/CSS
+- Netlify static hosting
 
 ## Features
 
-- Vite-powered static frontend
-- Vanilla JavaScript, no framework
 - Profession input with autocomplete
 - Clickable profession suggestions
 - Profession-specific loading jokes
@@ -45,10 +50,29 @@ Preview the production build:
 npm run preview
 ```
 
+There is no dedicated test suite yet. Use `npm run build` as the minimum verification check.
+
+## CI/CD
+
+GitHub Actions runs validation only:
+
+- [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs on pull requests and pushes to `main`.
+- The workflow installs dependencies, runs `npm test --if-present`, and builds the site.
+
+Netlify owns deployment:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Keep Netlify auto-deploy connected to `main`.
+- Protect `main` in GitHub, require pull requests, and require the `CI / Test And Build` status check before merge so failing changes do not reach the branch Netlify deploys.
+
 ## Project Structure
 
 ```text
 .
+├── AGENTS.md
+├── .agents/
+├── .github/
 ├── index.html
 ├── about.html
 ├── contact.html
@@ -65,6 +89,14 @@ npm run preview
 │   └── style.css
 └── vite.config.js
 ```
+
+## AI-First Project Notes
+
+Codex-facing project instructions live in [AGENTS.md](./AGENTS.md). Repo-specific skills live under [.agents/skills](./.agents/skills):
+
+- `$unemployedbyai-frontend`: Vite, vanilla JS, HTML, CSS, app interactions, autocomplete, sharing, and Robot Punch.
+- `$unemployedbyai-content-seo`: satire copy, job profiles, SEO metadata, sitemap, robots, Open Graph, and social snippets.
+- `$unemployedbyai-netlify-privacy`: Netlify config, static deployment, headers, redirects, privacy language, ads, and analytics boundaries.
 
 ## Content
 
@@ -104,6 +136,8 @@ Clean routes are configured for:
 /contact
 /privacy
 ```
+
+Netlify handles deployment. Keep the app static unless there is a clear reason to add server-side behavior.
 
 ## Privacy And Ads
 

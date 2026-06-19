@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Play tiny workplace arcade games from UnemployedByAI.lol, a satirical robot replacement simulator."
+    />
+    <meta name="theme-color" content="#f3ead7" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TRD0P1WXD8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+
+      gtag('config', 'G-TRD0P1WXD8');
+    </script>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Games | UnemployedByAI.lol</title>
+  </head>
+  <body>
+    <header class="site-topbar">
+      <a class="brand-link" href="/">UnemployedByAI.lol</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="/">Home</a>
+        <a href="/games" aria-current="page">Games</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy</a>
+      </nav>
+    </header>
+
+    <main class="games-page" aria-labelledby="games-title">
+      <section class="games-heading">
+        <p class="eyebrow">Workplace arcade division</p>
+        <h1 id="games-title">Games</h1>
+        <p>
+          Tiny Phaser-powered distractions for employees whose replacement paperwork is still
+          rendering.
+        </p>
+      </section>
+
+      <section class="games-gallery" aria-labelledby="games-gallery-title" data-games-gallery>
+        <div class="section-heading">
+          <p class="eyebrow">Available disasters</p>
+          <h2 id="games-gallery-title">Game Shelf</h2>
+          <p>The arcade cabinet is technically plugged in.</p>
+        </div>
+
+        <div class="game-list">
+          <button class="game-card-button" type="button" data-game-id="not-yet">
+            <span class="game-card-art">
+              <img src="/robots/mascot.svg" alt="Retro robot mascot blocking an unfinished arcade game" />
+              <span class="game-speech">You're not supposed to be here yet, come back later.</span>
+            </span>
+            <span class="game-card-copy">
+              <span class="eyebrow">Coming soon</span>
+              <span class="game-card-title">Unauthorized Break Room</span>
+              <span class="game-card-description">
+                A placeholder cabinet with corporate confidence and zero approved mechanics.
+              </span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="game-stage" data-game-stage aria-live="polite" aria-labelledby="selected-game-title" hidden>
+        <div class="game-stage-header">
+          <div>
+            <p class="eyebrow">Now loading, allegedly</p>
+            <h2 id="selected-game-title">Unauthorized Break Room</h2>
+          </div>
+          <button class="game-back-button" type="button" data-games-back>Back to games</button>
+        </div>
+        <div
+          class="game-frame"
+          data-game-mount
+          role="application"
+          aria-label="Coming soon Phaser game placeholder"
+          tabindex="0"
+        ></div>
+        <p class="game-status" role="status" data-game-status>
+          Phaser cabinet warming up. Please do not submit a ticket.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      Built entirely by Lypzis, a human. For now.
+    </footer>
+    <script type="module" src="/src/games.js"></script>
+  </body>
+</html>

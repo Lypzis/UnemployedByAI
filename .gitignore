@@ -6,3 +6,4 @@ dist/
 tmp-*.png
 tmp-*.jpg
 tmp-*.webp
+.playwright-cli

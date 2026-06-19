@@ -588,6 +588,118 @@ export const verdicts = [
   'You are valuable. But the robot is cheaper, and valuable.',
 ];
 
+export const interviewStopWords = [
+  'about',
+  'above',
+  'after',
+  'again',
+  'against',
+  'also',
+  'among',
+  'and',
+  'are',
+  'because',
+  'before',
+  'being',
+  'between',
+  'business',
+  'candidate',
+  'company',
+  'could',
+  'during',
+  'experience',
+  'fast-paced',
+  'first',
+  'from',
+  'has',
+  'have',
+  'hope',
+  'into',
+  'join',
+  'looking',
+  'more',
+  'most',
+  'nice',
+  'other',
+  'over',
+  'requirement',
+  'requirements',
+  'responsibilities',
+  'role',
+  'salary',
+  'senior',
+  'should',
+  'skills',
+  'some',
+  'strong',
+  'team',
+  'teams',
+  'tell',
+  'their',
+  'there',
+  'these',
+  'they',
+  'this',
+  'through',
+  'translation',
+  'under',
+  'using',
+  'we',
+  'with',
+  'work',
+  'would',
+  'years',
+  'your',
+];
+
+export const interviewFallbackKeywords = [
+  'synergy',
+  'stakeholders',
+  'roadmap',
+  'ownership',
+  'alignment',
+  'deliverables',
+  'metrics',
+  'collaboration',
+];
+
+export const interviewQuestionTemplates = [
+  'Tell me about a time you used {roleKeyword} without immediately becoming a meeting.',
+  'Your resume keeps whispering {resumeKeyword}. How does that help with {roleKeyword}?',
+  'Why should HR believe your {resumeKeyword} experience can survive our requirement for {gapKeyword}?',
+  'Describe a conflict involving {roleKeyword}, {resumeKeyword}, and one calendar invite that refused to die.',
+  'What would your previous manager say about your {overlapKeyword}, assuming they remember which dashboard you owned?',
+  'Explain {roleKeyword} to a stakeholder who thinks {resumeKeyword} is a personality trait.',
+  'Give an example where you turned {gapKeyword} into measurable corporate fog.',
+  'How would you prove you can handle {roleKeyword} before the spreadsheet auto-rejects you?',
+];
+
+export const interviewFeedbackLines = {
+  strong: [
+    'Suspiciously competent. HR has marked this as "requires second interview to confirm humanity."',
+    'The answer aligned with the paperwork. A rare and unsettling event.',
+    'Keyword compliance achieved. The resume gobbledygook scanner is briefly satisfied.',
+  ],
+  medium: [
+    'Acceptable corporate fog. The hiring robot nodded, but only because it has no neck.',
+    'Some keywords survived the answer. Others have entered witness protection.',
+    'HR detected relevance, then immediately scheduled a panel to dilute it.',
+  ],
+  weak: [
+    'The answer wandered away from the job description and may need a visitor badge to return.',
+    'Keyword famine detected. The spreadsheet is making a face.',
+    'The resume and the answer appear to be networking at separate events.',
+  ],
+};
+
+export const interviewFinalStatuses = [
+  'Proceeding to an unpaid take-home assignment nobody will read.',
+  'Moved to the talent pool, which is legally a folder.',
+  'Strong maybe. HR will now vanish behind a ficus of process.',
+  'Rejected by an algorithm wearing a tiny blazer.',
+  'Advanced to round four: explain your own resume to a panel of tabs.',
+];
+
 export const takenJobs = [
   {
     title: 'AI Recruiter',

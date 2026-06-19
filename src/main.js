@@ -2,6 +2,11 @@ import './style.css';
 import {
   badNewsPhrases,
   emptyProfessionProfile,
+  interviewFallbackKeywords,
+  interviewFeedbackLines,
+  interviewFinalStatuses,
+  interviewQuestionTemplates,
+  interviewStopWords,
   jobProfiles,
   professionOptions,
   siteUrl,
@@ -13,12 +18,102 @@ import {
 const app = document.querySelector('#app');
 const loadingPhraseDuration = 3000;
 const resultRevealDelay = 800;
+const interviewQuestionCount = 3;
+const interviewStopWordSet = new Set(interviewStopWords);
+const nonEnglishMarkers = [
+  'avec',
+  'bonjour',
+  'com',
+  'das',
+  'der',
+  'die',
+  'estoy',
+  'gracias',
+  'ich',
+  'merci',
+  'nao',
+  'nicht',
+  'não',
+  'para',
+  'por',
+  'pour',
+  'que',
+  'soy',
+  'uma',
+  'und',
+];
+const englishOnlyRoast =
+  "I can't understand a word of that. Use English only so HR can reject you in the language it automated first.";
 
 const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
 
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
 
 const normalize = (value) => value.trim().toLowerCase();
+
+const escapeHtml = (value) =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const getKeywordCounts = (text) => {
+  const counts = new Map();
+  const words = text
+    .toLowerCase()
+    .replaceAll(/[’']/g, '')
+    .match(/[a-z0-9][a-z0-9+#.-]{2,}/g) || [];
+
+  words.forEach((word) => {
+    const cleanWord = word.replace(/^[^a-z0-9]+|[^a-z0-9+#]+$/g, '');
+    if (!cleanWord || cleanWord.length < 3 || interviewStopWordSet.has(cleanWord) || /^\d+$/.test(cleanWord)) {
+      return;
+    }
+
+    counts.set(cleanWord, (counts.get(cleanWord) || 0) + 1);
+  });
+
+  return counts;
+};
+
+const extractKeywords = (text, limit = 8) =>
+  [...getKeywordCounts(text).entries()]
+    .sort((a, b) => b[1] - a[1] || b[0].length - a[0].length || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([word]) => word);
+
+const pickKeyword = (items) => randomItem(items.length ? items : interviewFallbackKeywords);
+
+const getKeywordMatches = (answer, keywords) => {
+  const answerKeywords = new Set(extractKeywords(answer, 80));
+  const cleanAnswer = normalize(answer);
+
+  return keywords.filter((keyword) => answerKeywords.has(keyword) || cleanAnswer.includes(keyword));
+};
+
+const renderKeywordChips = (keywords, emptyText) => {
+  if (!keywords.length) {
+    return `<span class="keyword-chip is-empty">${emptyText}</span>`;
+  }
+
+  return keywords.map((keyword) => `<span class="keyword-chip">${escapeHtml(keyword)}</span>`).join('');
+};
+
+const isEnglishOnlyText = (text) => {
+  const letters = text.match(/\p{L}/gu) || [];
+  const nonEnglishLetters = letters.filter((letter) => !/[a-z]/i.test(letter)).length;
+
+  if (letters.length && nonEnglishLetters / letters.length > 0.02) {
+    return false;
+  }
+
+  const words = new Set(normalize(text).replace(/[^a-z0-9+#.-]+/g, ' ').split(/\s+/).filter(Boolean));
+  const markerHits = nonEnglishMarkers.filter((marker) => words.has(marker)).length;
+
+  return markerHits < 3;
+};
 
 const detectProfile = (profession) => {
   const clean = normalize(profession);
@@ -115,6 +210,49 @@ const renderGalleryCard = (job, index) => `
   </article>
 `;
 
+const fillInterviewTemplate = (template, context) => {
+  const replacements = {
+    roleKeyword: pickKeyword(context.roleKeywords),
+    resumeKeyword: pickKeyword(context.resumeKeywords),
+    gapKeyword: pickKeyword(context.gapKeywords),
+    overlapKeyword: pickKeyword(context.overlapKeywords),
+  };
+
+  return Object.entries(replacements).reduce(
+    (question, [key, value]) => question.replaceAll(`{${key}}`, value),
+    template
+  );
+};
+
+const templateUsesKeyword = (template, keywordName) => template.includes(`{${keywordName}}`);
+
+const createInterviewContext = (roleText, resumeText) => {
+  const roleKeywords = extractKeywords(roleText, 10);
+  const resumeKeywords = extractKeywords(resumeText, 10);
+  const overlapKeywords = roleKeywords.filter((keyword) => resumeKeywords.includes(keyword));
+  const gapKeywords = roleKeywords.filter((keyword) => !resumeKeywords.includes(keyword));
+
+  return {
+    roleKeywords,
+    resumeKeywords,
+    overlapKeywords,
+    gapKeywords,
+  };
+};
+
+const createInterviewQuestions = (context) => {
+  const requiredRoleTemplate =
+    randomItem(interviewQuestionTemplates.filter((template) => templateUsesKeyword(template, 'roleKeyword'))) ||
+    randomItem(interviewQuestionTemplates);
+  const remainingTemplates = interviewQuestionTemplates.filter((template) => template !== requiredRoleTemplate);
+  const selectedTemplates = [
+    requiredRoleTemplate,
+    ...shuffle(remainingTemplates).slice(0, interviewQuestionCount - 1),
+  ];
+
+  return shuffle(selectedTemplates).map((template) => fillInterviewTemplate(template, context));
+};
+
 app.innerHTML = `
   <section class="hero" aria-labelledby="page-title">
     <div class="hero-grid">
@@ -171,6 +309,77 @@ app.innerHTML = `
     </div>
 
     <p class="incoming">More incoming. It is just a matter of time.</p>
+    <a class="section-down-link" href="#interview">Check if you still have a chance</a>
+  </section>
+
+  <section class="interview-section" id="interview" aria-labelledby="interview-title">
+    <div class="section-heading">
+      <p class="eyebrow">Applicant doom rehearsal</p>
+      <h2 id="interview-title">Interview Simulator</h2>
+      <p>Feed HR the role, paste a sanitized resume summary, then survive three questions.</p>
+    </div>
+
+    <div class="interview-shell">
+      <form class="interview-setup" aria-label="Interview simulator setup">
+        <div class="field-stack">
+          <label for="role-requirements">Role requirements</label>
+          <textarea
+            id="role-requirements"
+            name="role-requirements"
+            rows="8"
+            placeholder="Paste the role requirements, job description, or one of those postings asking for 9 years of experience in a 3-year-old tool."
+          ></textarea>
+        </div>
+
+        <div class="field-stack resume-field">
+          <label for="resume-text">Resume text</label>
+          <textarea
+            id="resume-text"
+            name="resume-text"
+            rows="10"
+            placeholder="Paste a cleaned-up resume summary: skills, roles, projects, wins. Leave out your name, phone, address, email, and anything the Terminator AI could use to find you."
+          ></textarea>
+          <p class="privacy-warning">
+            Do not paste personal information. The simulator runs locally, but the Terminator AI respects neither boundaries nor LinkedIn formatting.
+          </p>
+          <p class="interview-status" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="interview-controls">
+          <button class="interview-start" type="submit">Start HR Ritual</button>
+          <button class="interview-reset" type="button">Reset Simulator</button>
+        </div>
+      </form>
+
+      <div class="interview-side">
+        <aside class="interview-bot-card" aria-label="AI HR interviewer">
+          <img src="/robots/hr.svg" alt="AI HR robot interviewer with corporate clipboard energy" />
+          <p>AI HR is ready to misread your potential at scale.</p>
+        </aside>
+
+        <div class="interview-room" aria-live="polite" hidden>
+          <div class="interview-progress"></div>
+          <h3 class="interview-question"></h3>
+
+          <div class="field-stack answer-field">
+            <label for="interview-answer">Your answer</label>
+            <textarea
+              id="interview-answer"
+              rows="6"
+              placeholder="Answer with confidence, metrics, and the haunted confidence of a person who has opened LinkedIn."
+            ></textarea>
+          </div>
+
+          <div class="interview-controls">
+            <button class="interview-answer-button" type="button">Submit Answer</button>
+            <button class="interview-edit" type="button" data-interview-edit>Edit Inputs</button>
+          </div>
+
+          <div class="interview-feedback" aria-live="polite"></div>
+          <div class="interview-summary" hidden></div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <footer>
@@ -183,16 +392,17 @@ app.innerHTML = `
       <button class="punch-close" type="button" data-punch-close>Escape Reality</button>
       <p class="eyebrow">Workforce Resistance Simulator</p>
       <h2 id="punch-title">Punch the Robot</h2>
-      <p class="punch-instruction">Click the robot until morale improves.</p>
+      <p class="punch-instruction">Hit the moving target. Misses are now performance feedback.</p>
 
-      <button class="punch-target" type="button" aria-label="Punch selected robot">
-        <img class="punch-robot" src="" alt="" />
-        <span class="crack crack-one" aria-hidden="true"></span>
-        <span class="crack crack-two" aria-hidden="true"></span>
-        <span class="spark spark-one" aria-hidden="true"></span>
-        <span class="spark spark-two" aria-hidden="true"></span>
-        <span class="spark spark-three" aria-hidden="true"></span>
-      </button>
+      <div class="punch-game-shell">
+        <div class="punch-controls" aria-label="Robot Punch controls">
+          <button class="keyboard-punch-button" type="button">Keyboard Punch</button>
+          <button class="mute-button" type="button" aria-pressed="true">Sound Off</button>
+          <button class="replay-button" type="button" hidden>Reassemble Robot</button>
+        </div>
+        <div class="punch-game-mount" role="application" aria-label="Robot Punch arcade game" tabindex="0"></div>
+        <p class="punch-keyboard-note">Click targets, or press Space/Enter while the game is focused.</p>
+      </div>
 
       <div class="punch-stats" aria-live="polite">
         <span class="hit-counter">Worker Rage x0</span>
@@ -200,7 +410,6 @@ app.innerHTML = `
       </div>
       <p class="damage-label">Damage: pristine corporate equipment</p>
       <p class="robot-line">Awaiting authorized frustration.</p>
-      <button class="replay-button" type="button" hidden>Reassemble Robot</button>
       <div class="punch-share" hidden>
         <p class="punch-share-text">AUTOMATION DELAYED: 0 SECONDS</p>
         <div class="punch-share-actions" aria-label="Share minigame result">
@@ -222,10 +431,25 @@ const autocompleteList = document.querySelector('#profession-matches');
 const output = document.querySelector('.output');
 const suggestionButtons = document.querySelectorAll('.suggestion');
 const jobsGrid = document.querySelector('.jobs-grid');
+const interviewSection = document.querySelector('.interview-section');
+const interviewSetup = document.querySelector('.interview-setup');
+const roleRequirements = document.querySelector('#role-requirements');
+const resumeText = document.querySelector('#resume-text');
+const interviewStatus = document.querySelector('.interview-status');
+const interviewReset = document.querySelector('.interview-reset');
+const interviewRoom = document.querySelector('.interview-room');
+const interviewProgress = document.querySelector('.interview-progress');
+const interviewQuestion = document.querySelector('.interview-question');
+const answerField = document.querySelector('.answer-field');
+const interviewAnswer = document.querySelector('#interview-answer');
+const interviewAnswerButton = document.querySelector('.interview-answer-button');
+const interviewFeedback = document.querySelector('.interview-feedback');
+const interviewSummary = document.querySelector('.interview-summary');
 const punchModal = document.querySelector('.punch-modal');
 const punchPanel = document.querySelector('.punch-panel');
-const punchTarget = document.querySelector('.punch-target');
-const punchRobot = document.querySelector('.punch-robot');
+const punchGameMount = document.querySelector('.punch-game-mount');
+const keyboardPunchButton = document.querySelector('.keyboard-punch-button');
+const muteButton = document.querySelector('.mute-button');
 const hitCounter = document.querySelector('.hit-counter');
 const sessionScore = document.querySelector('.session-score');
 const damageLabel = document.querySelector('.damage-label');
@@ -242,6 +466,136 @@ let robotHits = 0;
 let workerRage = 0;
 let automationDelay = 0;
 let currentResistanceMessage = '';
+let interviewState = null;
+let punchGame = null;
+let isPunchMuted = true;
+
+const setInterviewActive = (isActive) => {
+  interviewSection.classList.toggle('is-active', isActive);
+  interviewSetup.hidden = isActive;
+};
+
+const renderInterviewQuestion = () => {
+  const questionNumber = interviewState.currentIndex + 1;
+
+  interviewRoom.hidden = false;
+  interviewSummary.hidden = true;
+  answerField.hidden = false;
+  interviewAnswer.disabled = false;
+  interviewAnswerButton.hidden = false;
+  interviewAnswerButton.disabled = false;
+  interviewAnswerButton.textContent = 'Submit Answer';
+  interviewAnswer.value = '';
+  interviewFeedback.innerHTML = '';
+  interviewProgress.textContent = `Question ${questionNumber} of ${interviewQuestionCount}`;
+  interviewQuestion.textContent = interviewState.questions[interviewState.currentIndex];
+  window.setTimeout(() => interviewAnswer.focus(), 0);
+};
+
+const renderInterviewFeedback = (result) => {
+  const nextLabel =
+    interviewState.currentIndex + 1 >= interviewQuestionCount ? 'View HR Verdict' : 'Next Question';
+
+  interviewAnswer.disabled = true;
+  interviewAnswerButton.disabled = true;
+  interviewFeedback.innerHTML = `
+    <article class="interview-feedback-card">
+      <p>${escapeHtml(result.line)}</p>
+      <div class="keyword-group">
+        <span>Role hits</span>
+        <div>${renderKeywordChips(result.roleHits, 'none detected')}</div>
+      </div>
+      <div class="keyword-group">
+        <span>Resume hits</span>
+        <div>${renderKeywordChips(result.resumeHits, 'resume stayed in another tab')}</div>
+      </div>
+      <div class="keyword-group">
+        <span>Missing corporate incantations</span>
+        <div>${renderKeywordChips(result.missingRole, 'fully buzzword-compliant')}</div>
+      </div>
+      <button class="interview-next" type="button" data-interview-next>${nextLabel}</button>
+    </article>
+  `;
+};
+
+const scoreInterviewAnswer = (answer) => {
+  const roleHits = getKeywordMatches(answer, interviewState.roleKeywords).slice(0, 6);
+  const resumeHits = getKeywordMatches(answer, interviewState.resumeKeywords).slice(0, 6);
+  const missingRole = interviewState.roleKeywords
+    .filter((keyword) => !roleHits.includes(keyword))
+    .slice(0, 4);
+  const score = roleHits.length * 2 + resumeHits.length + (answer.length >= 140 ? 1 : 0);
+  const level = score >= 6 ? 'strong' : score >= 3 ? 'medium' : 'weak';
+
+  return {
+    answer,
+    question: interviewState.questions[interviewState.currentIndex],
+    roleHits,
+    resumeHits,
+    missingRole,
+    line: randomItem(interviewFeedbackLines[level]),
+    level,
+    score,
+  };
+};
+
+const renderInterviewSummary = () => {
+  const allRoleHits = [...new Set(interviewState.answers.flatMap((answer) => answer.roleHits))];
+  const allResumeHits = [...new Set(interviewState.answers.flatMap((answer) => answer.resumeHits))];
+  const unansweredRoleKeywords = interviewState.roleKeywords
+    .filter((keyword) => !allRoleHits.includes(keyword))
+    .slice(0, 5);
+  const score = Math.min(
+    99,
+    24 + allRoleHits.length * 8 + allResumeHits.length * 5 + interviewState.answers.length * 4
+  );
+
+  interviewProgress.textContent = 'Final paperwork';
+  interviewQuestion.textContent = 'Interview complete';
+  answerField.hidden = true;
+  interviewAnswerButton.hidden = true;
+  interviewFeedback.innerHTML = '';
+  interviewSummary.hidden = false;
+  interviewSummary.innerHTML = `
+    <article class="interview-summary-card">
+      <span class="interview-score">${score}% HR Keyword Compliance</span>
+      <p>${escapeHtml(randomItem(interviewFinalStatuses))}</p>
+      <div class="keyword-group">
+        <span>Role keywords survived</span>
+        <div>${renderKeywordChips(allRoleHits.slice(0, 8), 'none, somehow')}</div>
+      </div>
+      <div class="keyword-group">
+        <span>Resume evidence presented</span>
+        <div>${renderKeywordChips(allResumeHits.slice(0, 8), 'the resume pleaded the fifth')}</div>
+      </div>
+      <div class="keyword-group">
+        <span>Still haunting the job description</span>
+        <div>${renderKeywordChips(unansweredRoleKeywords, 'nothing obvious; suspicious')}</div>
+      </div>
+      <button class="interview-next" type="button" data-interview-restart>Run Another Ritual</button>
+    </article>
+  `;
+};
+
+const resetInterview = ({ clearInputs = true } = {}) => {
+  interviewState = null;
+  interviewRoom.hidden = true;
+  interviewFeedback.innerHTML = '';
+  interviewSummary.innerHTML = '';
+  interviewSummary.hidden = true;
+  interviewAnswer.value = '';
+  answerField.hidden = false;
+  interviewAnswer.disabled = false;
+  interviewAnswerButton.hidden = false;
+  interviewAnswerButton.disabled = false;
+  interviewStatus.textContent = '';
+  setInterviewActive(false);
+
+  if (clearInputs) {
+    roleRequirements.value = '';
+    resumeText.value = '';
+  }
+};
 
 const clearTimer = () => {
   if (currentTimer) {
@@ -430,17 +784,21 @@ const renderPunchShare = (isDestroyed) => {
   document.querySelector('.punch-linkedin-share').href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
 };
 
+const renderMuteButton = () => {
+  muteButton.textContent = isPunchMuted ? 'Sound Off' : 'Sound On';
+  muteButton.setAttribute('aria-pressed', String(!isPunchMuted));
+};
+
 const renderPunchState = () => {
   const stage = getDamageStage(robotHits);
   const isDestroyed = stage === 4;
 
   punchPanel.classList.remove('is-hit');
-  punchRobot.className = `punch-robot robot-stage-${stage}${isDestroyed ? ' robot-destroyed' : ''}`;
   hitCounter.textContent = `Worker Rage x${workerRage}`;
   sessionScore.textContent = `Automation Delayed: ${automationDelay}s`;
   damageLabel.textContent = damageLabels[stage];
   replayButton.hidden = !isDestroyed;
-  punchTarget.disabled = isDestroyed;
+  keyboardPunchButton.disabled = isDestroyed;
   renderPunchShare(isDestroyed);
 
   if (isDestroyed) {
@@ -448,7 +806,7 @@ const renderPunchState = () => {
   }
 };
 
-const openPunchModal = (robot) => {
+const openPunchModal = async (robot) => {
   selectedRobot = robot;
   robotHits = 0;
   workerRage = 0;
@@ -458,12 +816,60 @@ const openPunchModal = (robot) => {
   punchModal.hidden = false;
   document.body.classList.add('modal-open');
   document.querySelector('#punch-title').textContent = robot.title;
-  punchRobot.src = robot.image;
-  punchRobot.alt = `${robot.title} awaiting workplace consequences`;
-  robotLine.textContent = 'Awaiting authorized frustration.';
+  robotLine.textContent = 'Booting authorized frustration arena...';
   punchCopyFeedback.textContent = '';
+  keyboardPunchButton.disabled = false;
+  renderMuteButton();
   renderPunchState();
-  window.setTimeout(() => punchTarget.focus(), 0);
+
+  if (punchGame) {
+    punchGame.destroy();
+    punchGame = null;
+  }
+
+  punchGameMount.innerHTML = '';
+
+  try {
+    const { createRobotPunchGame } = await import('./punchGame.js');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    punchGame = await createRobotPunchGame({
+      mount: punchGameMount,
+      robot,
+      muted: isPunchMuted,
+      reducedMotion,
+      callbacks: {
+        onReady() {
+          robotLine.textContent = 'Click the target before HR moves it.';
+          window.setTimeout(() => punchGameMount.focus(), 0);
+        },
+        onHit(result) {
+          robotHits = result.hits;
+          workerRage = result.workerRage;
+          automationDelay = result.automationDelay;
+          robotLine.textContent = result.line;
+          renderPunchState();
+        },
+        onMiss(result) {
+          robotHits = result.hits;
+          workerRage = result.workerRage;
+          automationDelay = result.automationDelay;
+          robotLine.textContent = result.line;
+          renderPunchState();
+        },
+        onDefeat(result) {
+          robotHits = result.hits;
+          workerRage = result.workerRage;
+          automationDelay = result.automationDelay;
+          currentResistanceMessage = getResistanceMessage(automationDelay);
+          robotLine.textContent = result.line;
+          renderPunchState();
+        },
+      },
+    });
+  } catch {
+    robotLine.textContent = 'Game failed to boot. Automation is hiding behind a loading screen.';
+  }
 };
 
 const closePunchModal = () => {
@@ -474,26 +880,16 @@ const closePunchModal = () => {
   workerRage = 0;
   automationDelay = 0;
   currentResistanceMessage = '';
+
+  if (punchGame) {
+    punchGame.destroy();
+    punchGame = null;
+  }
 };
 
 const punchRobotOnce = () => {
   if (!selectedRobot || robotHits >= 10) return;
-
-  robotHits += 1;
-  workerRage += 1;
-  automationDelay += workerRage;
-  if (robotHits >= 10) {
-    currentResistanceMessage = getResistanceMessage(automationDelay);
-  }
-  robotLine.textContent = randomItem(selectedRobot.hitLines);
-  renderPunchState();
-
-  punchPanel.classList.add('is-hit');
-  punchTarget.classList.remove('impact');
-  void punchTarget.offsetWidth;
-  punchTarget.classList.add('impact');
-
-  window.setTimeout(() => punchPanel.classList.remove('is-hit'), 260);
+  punchGame?.punch();
 };
 
 const reassembleRobot = () => {
@@ -501,8 +897,11 @@ const reassembleRobot = () => {
   currentResistanceMessage = '';
   robotLine.textContent = 'Reassembled against worker wishes.';
   punchCopyFeedback.textContent = '';
+  keyboardPunchButton.disabled = false;
   renderPunchState();
-  punchTarget.focus();
+  punchGame?.reset(selectedRobot, { workerRage, automationDelay });
+  punchGame?.playUi();
+  punchGameMount.focus();
 };
 
 const renderShareButtons = (result) => {
@@ -630,6 +1029,92 @@ autocompleteList.addEventListener('click', (event) => {
   fillProfession(option.dataset.profession);
 });
 
+interviewSetup.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  const roleText = roleRequirements.value.trim();
+  const resumeValue = resumeText.value.trim();
+
+  if (!roleText || !resumeValue) {
+    interviewStatus.textContent = 'Paste role requirements and sanitized resume text before HR begins the ritual.';
+    return;
+  }
+
+  if (!isEnglishOnlyText(`${roleText} ${resumeValue}`)) {
+    interviewStatus.textContent = englishOnlyRoast;
+    return;
+  }
+
+  const context = createInterviewContext(roleText, resumeValue);
+  interviewState = {
+    ...context,
+    questions: createInterviewQuestions(context),
+    answers: [],
+    currentIndex: 0,
+  };
+
+  interviewStatus.textContent = 'Interview generated locally. No personal data was invited to the meeting.';
+  setInterviewActive(true);
+  renderInterviewQuestion();
+});
+
+interviewAnswerButton.addEventListener('click', () => {
+  if (!interviewState) return;
+
+  const answer = interviewAnswer.value.trim();
+
+  if (!answer) {
+    interviewFeedback.innerHTML = `
+      <article class="interview-feedback-card">
+        <p>An empty answer is bold. Unfortunately HR calls it "not demonstrating impact."</p>
+      </article>
+    `;
+    return;
+  }
+
+  if (!isEnglishOnlyText(answer)) {
+    interviewFeedback.innerHTML = `
+      <article class="interview-feedback-card">
+        <p>${englishOnlyRoast}</p>
+      </article>
+    `;
+    return;
+  }
+
+  const result = scoreInterviewAnswer(answer);
+  interviewState.answers.push(result);
+  renderInterviewFeedback(result);
+});
+
+interviewRoom.addEventListener('click', (event) => {
+  if (event.target.closest('[data-interview-edit]')) {
+    resetInterview({ clearInputs: false });
+    roleRequirements.focus();
+    return;
+  }
+
+  if (event.target.closest('[data-interview-restart]')) {
+    resetInterview({ clearInputs: false });
+    roleRequirements.focus();
+    return;
+  }
+
+  if (!event.target.closest('[data-interview-next]') || !interviewState) return;
+
+  if (interviewState.currentIndex + 1 >= interviewQuestionCount) {
+    renderInterviewSummary();
+    return;
+  }
+
+  interviewState.currentIndex += 1;
+  renderInterviewQuestion();
+});
+
+interviewReset.addEventListener('click', () => {
+  resetInterview();
+  roleRequirements.focus();
+});
+
 jobsGrid.addEventListener('click', (event) => {
   const trigger = event.target.closest('.punch-trigger');
   if (!trigger) return;
@@ -637,7 +1122,17 @@ jobsGrid.addEventListener('click', (event) => {
   openPunchModal(takenJobs[Number(trigger.dataset.robotIndex)]);
 });
 
-punchTarget.addEventListener('click', punchRobotOnce);
+keyboardPunchButton.addEventListener('click', punchRobotOnce);
+
+muteButton.addEventListener('click', () => {
+  isPunchMuted = !isPunchMuted;
+  punchGame?.setMuted(isPunchMuted);
+  renderMuteButton();
+
+  if (!isPunchMuted) {
+    punchGame?.playUi();
+  }
+});
 
 replayButton.addEventListener('click', reassembleRobot);
 
@@ -645,6 +1140,7 @@ punchModal.addEventListener('click', (event) => {
   const shareButton = event.target.closest('[data-punch-share]');
 
   if (shareButton) {
+    punchGame?.playUi();
     const text = shareButton.dataset.punchShare === 'link' ? siteUrl : getPunchShareCopy();
 
     navigator.clipboard

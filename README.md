@@ -19,7 +19,8 @@ The site is intentionally unserious: users enter a profession, wait through a fa
 - Randomized replacement results
 - Share/copy buttons
 - Jobs Already Taken gallery
-- Robot Punch minigame in the gallery
+- Phaser-powered Robot Punch minigame in the gallery with local CC0 sound effects
+- Browser-only Interview Simulator with pasted resume text
 - About, Contact, and Privacy pages
 - Netlify-ready config
 - `robots.txt` and `sitemap.xml`
@@ -51,6 +52,10 @@ npm run preview
 ```
 
 There is no dedicated test suite yet. Use `npm run build` as the minimum verification check.
+For the Interview Simulator, also manually check pasted role requirements, sanitized resume text,
+the three-question flow, reset behavior, and the no-personal-information warning.
+For Robot Punch, manually check the Phaser modal, keyboard punch button, mute toggle, replay,
+share unlock, and local audio loading.
 
 ## CI/CD
 
@@ -141,7 +146,7 @@ Netlify handles deployment. Keep the app static unless there is a clear reason t
 
 ## Privacy And Ads
 
-The current Privacy page says the profession input is processed locally in the browser and is not sent to a server by this website.
+The current Privacy page says profession input, role requirements, pasted resume text, and Interview Simulator answers are processed locally in the browser and are not sent to a server by this website.
 
 Before adding AdSense, analytics, or any third-party tracking, update `privacy.html` with the exact provider/cookie language required.
 

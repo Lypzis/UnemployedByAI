@@ -33,6 +33,7 @@ Use this skill for app behavior, Vite config, HTML pages, vanilla JavaScript, CS
 - Keep the app static and browser-only.
 - Prefer simple functions and data-driven copy over abstractions.
 - Keep interactions accessible: labels, focus behavior, ARIA state, keyboard behavior, and reduced-motion friendliness where relevant.
+- Reuse shared CSS selectors for repeated UI patterns so matching elements keep the same hover, focus, active, spacing, and responsive behavior.
 - Keep Robot Punch lightweight with DOM/CSS state. Avoid canvas or game engines unless explicitly requested.
 - Keep the main profession analysis flow fast to load and funny to use.
 - Avoid adding framework dependencies for small UI changes.
